@@ -24,13 +24,14 @@ specific installation of Moodle, or in the `config.php` file located alongside t
 
 The following default URLs are used for the various WebDriver variants:
 
-|| Driver       || Default URL                   || Configuration variable        ||
-|| Selenium     | `http://localhost:4444/wd/hub` | `$CFG->behat_selenium_url`     |
-|| Chrome       | `http://localhost:9515`        | `$CFG->behat_chromedriver_url` |
-|| Firefox      | `http://localhost:4444`        | `$CFG->behat_geckodriver_url`  |
-|| Safari       | `http://localhost:4444`        | `$CFG->behat_safaridriver_url` |
-|| Edge         | `http://localhost:4444`        | `$CFG->behat_edgedriver_url`   |
-|| BrowserStack | [Not set]                      | `$CFG->behat_browserstack_url` |
+Driver       | Default URL                    | Configuration variable
+---          | ---                            | ---
+Selenium     | `http://localhost:4444/wd/hub` | `$CFG->behat_selenium_url`
+Chrome       | `http://localhost:9515`        | `$CFG->behat_chromedriver_url`
+Firefox      | `http://localhost:4444`        | `$CFG->behat_geckodriver_url`
+Safari       | `http://localhost:4444`        | `$CFG->behat_safaridriver_url`
+Edge         | `http://localhost:4444`        | `$CFG->behat_edgedriver_url`
+BrowserStack | [Not set]                      | `$CFG->behat_browserstack_url`
 
 An example configuration is available in `config-dist.php`.
 
