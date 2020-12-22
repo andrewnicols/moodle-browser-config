@@ -105,7 +105,7 @@ class ProfileManager {
      *
      * @return  string
      */
-    protected function getSeleniumUrl(): string {
+    public function getSeleniumUrl(): string {
         global $CFG;
 
         if (property_exists($CFG, 'behat_selenium_url')) {
@@ -121,7 +121,7 @@ class ProfileManager {
      *
      * @return  string
      */
-    protected function getChromedriverUrl(): string {
+    public function getChromedriverUrl(): string {
         global $CFG;
 
         if (property_exists($CFG, 'behat_chromedriver_url')) {
@@ -137,7 +137,7 @@ class ProfileManager {
      *
      * @return  string
      */
-    protected function getGeckodriverUrl(): string {
+    public function getGeckodriverUrl(): string {
         global $CFG;
 
         if (property_exists($CFG, 'behat_geckodriver_url')) {
@@ -153,7 +153,7 @@ class ProfileManager {
      *
      * @return  string
      */
-    protected function getEdgedriverUrl(): string {
+    public function getEdgedriverUrl(): string {
         global $CFG;
 
         if (property_exists($CFG, 'behat_edgedriver_url')) {
@@ -165,11 +165,28 @@ class ProfileManager {
     }
 
     /**
+     * Get the path to the MS Edge Binary.
+     *
+     * This is required for some variants of edge, notably the Dev channels.
+     *
+     * @return  null|string
+     */
+    public function getEdgeBinaryPath(): ?string {
+        global $CFG;
+
+        if (property_exists($CFG, 'behat_edge_binary')) {
+            return $CFG->behat_edge_binary;
+        }
+
+        return null;
+    }
+
+    /**
      * Get the safaridriver URL.
      *
      * @return  string
      */
-    protected function getSafaridriverUrl(): string {
+    public function getSafaridriverUrl(): string {
         global $CFG;
 
         if (property_exists($CFG, 'behat_safaridriver_url')) {
@@ -185,7 +202,7 @@ class ProfileManager {
      *
      * @return  string
      */
-    protected function getBrowserStackUrl(): ?string {
+    public function getBrowserStackUrl(): ?string {
         global $CFG;
 
         if (property_exists($CFG, 'behat_browserstack_url')) {
@@ -201,7 +218,7 @@ class ProfileManager {
      * @param   bool $w3c
      * @return  array
      */
-    protected function getStandardChromeProfiles(bool $w3c): array {
+    public function getStandardChromeProfiles(bool $w3c): array {
         return [
             // Google Chrome using Chromedriver.
             'chromedriver' => $this->getBrowserProfile(
@@ -251,7 +268,7 @@ class ProfileManager {
      * @param   bool $w3c
      * @return  array
      */
-    protected function getStandardFirefoxProfiles(bool $w3c): array {
+    public function getStandardFirefoxProfiles(bool $w3c): array {
         return [
             // Mozilla Firefox using Geckodriver.
             'gecko' => $this->getBrowserProfile(
@@ -299,7 +316,7 @@ class ProfileManager {
      * @param   bool $w3c
      * @return  array
      */
-    protected function getStandardEdgeProfiles(bool $w3c): array {
+    public function getStandardEdgeProfiles(bool $w3c): array {
         return [
             // Microsoft Edge.
             'edgedriver' => $this->getBrowserProfile(
@@ -335,7 +352,7 @@ class ProfileManager {
      * @param   bool $w3c
      * @return  array
      */
-    protected function getStandardSafariProfiles(bool $w3c): array {
+    public function getStandardSafariProfiles(bool $w3c): array {
         return [
             'safaridriver' => $this->getBrowserProfile(
                 'safari',
@@ -351,7 +368,7 @@ class ProfileManager {
      * @param   bool $w3c
      * @return  array
      */
-    protected function getStandardBrowserStackProfiles(bool $w3c): array {
+    public function getStandardBrowserStackProfiles(bool $w3c): array {
         // A small selection of Browserstack browsers to gives an example of how these can be used.
         $browserstackUrl = $this->getBrowserStackUrl();
         if (!$browserstackUrl) {
@@ -457,9 +474,10 @@ class ProfileManager {
                 ],
             ];
 
-            if (isset($CFG->behat_edge_binary)) {
-                $defaultcapabilities['ms:edgeOptions']['binary'] = $CFG->behat_edge_binary;
+            if ($binaryPath = $this->getEdgeBinaryPath()) {
+                $defaultcapabilities['ms:edgeOptions']['binary'] = $binaryPath;
             }
+
             $capabilities = array_merge_recursive(
                 $defaultcapabilities,
                 $capabilities

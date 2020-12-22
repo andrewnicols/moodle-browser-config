@@ -17,15 +17,22 @@ vendor/bin/behat --profile=headlesschrome --config=/Users/nicols/Sites/moodles/w
 ```
 
 
-## Default driver URLs:
+## Configuration
 
-The following variables are configured by default for the various drivers.
-```
-    $CFG->behat_chromedriver_url = 'http://localhost:9515';
-    $CFG->behat_geckodriver_url = 'http://localhost:4446';
-    $CFG->behat_safaridriver_url = 'http://localhost:4447';
-    $CFG->behat_edgedriver_url = 'http://localhost:4448';
-    $CFG->behat_selenium_url = 'http://localhost:4444/wd/hub';
-```
+Sensible defaults are provided for all drivers. These can be configured, either in the Moodle `config.php` for a
+specific installation of Moodle, or in the `config.php` file located alongside the `init.php` file for this helper.
 
-You can override these in your config.php, or by adding a config.php to this repo for all Moodle sites.
+The following default URLs are used for the various WebDriver variants:
+
+|| Driver       || Default URL                   || Configuration variable        ||
+|| Selenium     | `http://localhost:4444/wd/hub` | `$CFG->behat_selenium_url`     |
+|| Chrome       | `http://localhost:9515`        | `$CFG->behat_chromedriver_url` |
+|| Firefox      | `http://localhost:4444`        | `$CFG->behat_geckodriver_url`  |
+|| Safari       | `http://localhost:4444`        | `$CFG->behat_safaridriver_url` |
+|| Edge         | `http://localhost:4444`        | `$CFG->behat_edgedriver_url`   |
+|| BrowserStack | [Not set]                      | `$CFG->behat_browserstack_url` |
+
+An example configuration is available in `config-dist.php`.
+
+You can also specify additional profiles by creating a `localprofiles.php` file alognside the `init.php` file. See the
+`examples` folder for some examples of these.
