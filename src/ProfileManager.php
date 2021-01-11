@@ -73,10 +73,21 @@ class ProfileManager {
     public function addCustomProfiles() {
         global $CFG;
 
+        $profiles = [];
+
         $localprofiles = __DIR__ . '/../localprofiles.php';
         if (file_exists($localprofiles)) {
-            require_once($localprofiles);
+            $profiles = include($localprofiles);
         }
+
+        if (!is_array($profiles)) {
+            throw new \Exception("Invalid return type when loading custom profiles");
+        }
+
+        $CFG->behat_profiles = array_merge(
+            $CFG->behat_profiles,
+            $profiles
+        );
     }
 
     /**
@@ -87,7 +98,7 @@ class ProfileManager {
     public function getStandardProfiles(): array {
         global $CFG;
 
-        $w3c = $this->supportsW3C();
+        $w3c = self::supportsW3C();
 
         $profiles = array_merge(
             $this->getStandardChromeProfiles($w3c),
@@ -105,7 +116,7 @@ class ProfileManager {
      *
      * @return  string
      */
-    public function getSeleniumUrl(): string {
+    public static function getSeleniumUrl(): string {
         global $CFG;
 
         if (property_exists($CFG, 'behat_selenium_url')) {
@@ -121,7 +132,7 @@ class ProfileManager {
      *
      * @return  string
      */
-    public function getChromedriverUrl(): string {
+    public static function getChromedriverUrl(): string {
         global $CFG;
 
         if (property_exists($CFG, 'behat_chromedriver_url')) {
@@ -137,7 +148,7 @@ class ProfileManager {
      *
      * @return  string
      */
-    public function getGeckodriverUrl(): string {
+    public static function getGeckodriverUrl(): string {
         global $CFG;
 
         if (property_exists($CFG, 'behat_geckodriver_url')) {
@@ -153,7 +164,7 @@ class ProfileManager {
      *
      * @return  string
      */
-    public function getEdgedriverUrl(): string {
+    public static function getEdgedriverUrl(): string {
         global $CFG;
 
         if (property_exists($CFG, 'behat_edgedriver_url')) {
@@ -171,7 +182,7 @@ class ProfileManager {
      *
      * @return  null|string
      */
-    public function getEdgeBinaryPath(): ?string {
+    public static function getEdgeBinaryPath(): ?string {
         global $CFG;
 
         if (property_exists($CFG, 'behat_edge_binary')) {
@@ -186,7 +197,7 @@ class ProfileManager {
      *
      * @return  string
      */
-    public function getSafaridriverUrl(): string {
+    public static function getSafaridriverUrl(): string {
         global $CFG;
 
         if (property_exists($CFG, 'behat_safaridriver_url')) {
@@ -202,7 +213,7 @@ class ProfileManager {
      *
      * @return  string
      */
-    public function getBrowserStackUrl(): ?string {
+    public static function getBrowserStackUrl(): ?string {
         global $CFG;
 
         if (property_exists($CFG, 'behat_browserstack_url')) {
@@ -221,14 +232,14 @@ class ProfileManager {
     public function getStandardChromeProfiles(bool $w3c): array {
         return [
             // Google Chrome using Chromedriver.
-            'chromedriver' => $this->getBrowserProfile(
+            'chromedriver' => self::getBrowserProfile(
                 'chrome',
-                $this->getChromedriverUrl(),
+                self::getChromedriverUrl(),
                 $w3c
             ),
-            'headlesschromedriver' => $this->getBrowserProfile(
+            'headlesschromedriver' => self::getBrowserProfile(
                 'chrome',
-                $this->getChromedriverUrl(),
+                self::getChromedriverUrl(),
                 $w3c,
                 [
                     'chromeOptions' => [
@@ -241,14 +252,14 @@ class ProfileManager {
             ),
 
             // Google Chrome using Selenium.
-            'chrome' => $this->getBrowserProfile(
+            'chrome' => self::getBrowserProfile(
                 'chrome',
-                $this->getSeleniumUrl(),
+                self::getSeleniumUrl(),
                 $w3c
             ),
-            'headlesschrome' => $this->getBrowserProfile(
+            'headlesschrome' => self::getBrowserProfile(
                 'chrome',
-                $this->getSeleniumUrl(),
+                self::getSeleniumUrl(),
                 $w3c,
                 [
                     'chromeOptions' => [
@@ -271,14 +282,14 @@ class ProfileManager {
     public function getStandardFirefoxProfiles(bool $w3c): array {
         return [
             // Mozilla Firefox using Geckodriver.
-            'gecko' => $this->getBrowserProfile(
+            'gecko' => self::getBrowserProfile(
                 'firefox',
-                $this->getGeckodriverUrl(),
+                self::getGeckodriverUrl(),
                 $w3c
             ),
-            'headlessgecko' => $this->getBrowserProfile(
+            'headlessgecko' => self::getBrowserProfile(
                 'firefox',
-                $this->getGeckodriverUrl(),
+                self::getGeckodriverUrl(),
                 $w3c,
                 [
                     'moz:firefoxOptions' => [
@@ -290,14 +301,14 @@ class ProfileManager {
             ),
 
             // Mozilla Firefox using Selenium.
-            'firefox' => $this->getBrowserProfile(
+            'firefox' => self::getBrowserProfile(
                 'firefox',
-                $this->getSeleniumUrl(),
+                self::getSeleniumUrl(),
                 $w3c
             ),
-            'headlessfirefox' => $this->getBrowserProfile(
+            'headlessfirefox' => self::getBrowserProfile(
                 'firefox',
-                $this->getSeleniumUrl(),
+                self::getSeleniumUrl(),
                 $w3c,
                 [
                     'moz:firefoxOptions' => [
@@ -319,15 +330,16 @@ class ProfileManager {
     public function getStandardEdgeProfiles(bool $w3c): array {
         return [
             // Microsoft Edge.
-            'edgedriver' => $this->getBrowserProfile(
+            'edgedriver' => self::getBrowserProfile(
                 'edge',
-                $this->getEdgedriverUrl(),
+                self::getEdgedriverUrl(),
                 $w3c
             ),
-            'headlessedgedriver' => $this->getBrowserProfile(
+            'headlessedgedriver' => self::getBrowserProfile(
                 'edge',
-                $this->getEdgedriverUrl(),
-                $w3c, [
+                self::getEdgedriverUrl(),
+                $w3c,
+                [
                     'ms:edgeOptions' => [
                         'args' => [
                             'headless',
@@ -338,9 +350,9 @@ class ProfileManager {
             ),
 
             // Note: There is currently some configuration issue when running Edge through selenium.
-            'edge' => $this->getBrowserProfile(
+            'edge' => self::getBrowserProfile(
                 'edge',
-                $this->getSeleniumUrl(),
+                self::getSeleniumUrl(),
                 $w3c
             ),
         ];
@@ -354,9 +366,9 @@ class ProfileManager {
      */
     public function getStandardSafariProfiles(bool $w3c): array {
         return [
-            'safaridriver' => $this->getBrowserProfile(
+            'safaridriver' => self::getBrowserProfile(
                 'safari',
-                $this->getSafaridriverUrl(),
+                self::getSafaridriverUrl(),
                 $w3c
             ),
         ];
@@ -370,34 +382,42 @@ class ProfileManager {
      */
     public function getStandardBrowserStackProfiles(bool $w3c): array {
         // A small selection of Browserstack browsers to gives an example of how these can be used.
-        $browserstackUrl = $this->getBrowserStackUrl();
+        $browserstackUrl = self::getBrowserStackUrl();
         if (!$browserstackUrl) {
             return [];
         }
 
         return [
-            'bs_osx_safari' => $this->getBrowserProfile(
+            'bs_osx_safari' => self::getBrowserProfile(
                 'safari',
                 $browserstackUrl,
                 $w3c,
                 [
-                    'os' => 'OS X',
-                    'os_version' => 'Big Sur',
-                    'browser' => 'Safari',
-                    'browserstack.local' => true,
+                    'bstack:options' => [
+                        'os' => 'OS X',
+                        'osVersion' => 'Big Sur',
+                        'local' => true,
+                    ],
+                    'capabilities' => [
+                        'browserName' => 'Safari',
+                    ],
                 ]
             ),
 
-            'bs_win_edge' => $this->getBrowserProfile(
+            'bs_win_edge' => self::getBrowserProfile(
                 'edge',
                 $browserstackUrl,
                 $w3c,
                 [
-                    'os' => 'Windows',
-                    'os_version' => '10',
-                    'browser' => 'Edge',
-                    'browser_version' => '88.0 beta',
-                    'browserstack.local' => true,
+                    'bstack:options' => [
+                        'os' => 'Windows',
+                        'osVersion' => '10',
+                        'local' => true,
+                    ],
+                    'capabilities' => [
+                        'browserName' => 'Edge',
+                        'browserVersion' => '87.0',
+                    ],
                 ]
             ),
         ];
@@ -421,7 +441,7 @@ class ProfileManager {
     ) {
         global $CFG;
 
-        $CFG->behat_profiles[$profileName] = $this->getBrowserProfile($browserName, $wdhost, $w3c, $capabilities);
+        $CFG->behat_profiles[$profileName] = self::getBrowserProfile($browserName, $wdhost, $w3c, $capabilities);
     }
 
     /**
@@ -433,7 +453,7 @@ class ProfileManager {
      * @param   array $capabilities
      * @return  array
      */
-    public function getBrowserProfile(
+    public static function getBrowserProfile(
         string $browserName,
         string $wdhost,
         bool $w3c = true,
@@ -474,7 +494,7 @@ class ProfileManager {
                 ],
             ];
 
-            if ($binaryPath = $this->getEdgeBinaryPath()) {
+            if ($binaryPath = self::getEdgeBinaryPath()) {
                 $defaultcapabilities['ms:edgeOptions']['binary'] = $binaryPath;
             }
 
@@ -623,6 +643,10 @@ class ProfileManager {
         }
 
         // Handle browserstack additional options.
+        if (array_key_exists('bstack:options', $capabilities)) {
+            $profile['capabilities']['extra_capabilities']['bstack:options'] = $capabilities['bstack:options'];
+        }
+
         if (!empty($profile['capabilities']['extra_capabilities']['bstack:options'])) {
             if (!empty($profile['capabilities']['extra_capabilities']['bstack:options']['projectName'])) {
                 $profile['capabilities']['name'] = $profile['capabilities']['extra_capabilities']['bstack:options']['projectName'];
@@ -637,7 +661,7 @@ class ProfileManager {
      *
      * @return  bool
      */
-    public function supportsW3C(): bool {
+    public static function supportsW3C(): bool {
         $relativedir = null;
 
         $backtrace = debug_backtrace(2);
