@@ -661,11 +661,17 @@ class ProfileManager {
     }
 
     /**
-     * Whether this call is made as part of behat setup.
+     * Whether this call is made as part of a behat CLI call.
      *
      * @return  bool
      */
-    public static function isBehatSetup(): bool {
+    public static function isBehatCliUsage(): bool {
+        if (defined('BEHAT_TEST') && BEHAT_TEST) {
+            // BEHAT_TEST is set when running Behat via CLI.
+            return true;
+        }
+
+        // Determine if one of the behat CLI scripts is in use.
         $backtrace = debug_backtrace(2);
         foreach ($backtrace as $params) {
             if (strpos($params['file'], '/admin/tool/behat/cli/') !== false) {

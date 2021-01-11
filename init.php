@@ -26,7 +26,8 @@ use AndrewNicols\Behat\ProfileManager;
 
 require_once(__DIR__ . '/src/ProfileManager.php');
 
-if (!ProfileManager::isBehatSetup()) {
+if (!ProfileManager::isBehatCliUsage()) {
+    // This is not a behat call. Do not add the profile manager.
     return;
 }
 
