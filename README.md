@@ -30,7 +30,7 @@ Selenium     | `http://localhost:4444/wd/hub` | `$CFG->behat_selenium_url`
 Chrome       | `http://localhost:9515`        | `$CFG->behat_chromedriver_url`
 Firefox      | `http://localhost:4444`        | `$CFG->behat_geckodriver_url`
 Safari       | `http://localhost:4444`        | `$CFG->behat_safaridriver_url`
-Edge         | `http://localhost:4444`        | `$CFG->behat_edgedriver_url`
+Edge         | `http://localhost:9515`        | `$CFG->behat_edgedriver_url`
 BrowserStack | [Not set]                      | `$CFG->behat_browserstack_url`
 
 An example configuration is available in `config-dist.php`.
@@ -64,10 +64,10 @@ The following profiles are also included but should be considered experimental. 
 
 Profile name         | Browser | Driver       | Reliability | Notes
 ---                  | ---     | ---          | ---         | ---
-`edge`               | MS Edge | Selenium     | Good        | Fairly reliable but additional configuration may be required
-`edgedriver          | MS Edge | edgedriver   | Good        | Similar to `edge`, but using the edgedriver directly
+`edgedriver          | MS Edge | edgedriver   | Good        | Fairly reliable but additional configuration may be required
 `headlessedgedriver` | MS Edge | edgedriver   | Good        | Similar to `edgedriver` but headless
-`safaridriver`       | Safari  | safaridriver | Very pooor  | Click is not supported rendering this driver useless
+`edge`               | MS Edge | Selenium     | Very poor   | Does not seem to work with Selenium 3.141.59
+`safaridriver`       | Safari  | safaridriver | Very poor   | Click is not supported rendering this driver useless
 
 
 ## Custom profiles

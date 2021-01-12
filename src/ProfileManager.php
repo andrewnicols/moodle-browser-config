@@ -172,7 +172,7 @@ class ProfileManager {
         }
 
         // Return the default URL.
-        return 'http://localhost:4444';
+        return 'http://localhost:9515';
     }
 
     /**
