@@ -28,6 +28,11 @@ namespace AndrewNicols\Behat;
 class ProfileManager {
 
     /**
+     * @var object Local configuration for the Browser Config tool.
+     */
+    protected static $config;
+
+    /**
      * Setup the Behat Profile Manager.
      */
     public function __construct() {
@@ -37,17 +42,20 @@ class ProfileManager {
             $CFG->behat_profiles = [];
         }
 
-        $this->loadLocalConfiguration();
+        self::$config = (object) [];
+        self::loadLocalConfiguration();
     }
 
     /**
      * Load local configuration
      */
-    protected function loadLocalConfiguration() {
-        global $CFG;
+    protected static function loadLocalConfiguration() {
         $browserconfigfilepath = __DIR__ . '/../config.php';
         if (file_exists($browserconfigfilepath)) {
-            require_once($browserconfigfilepath);
+            $config = require($browserconfigfilepath);
+            if (is_object($config)) {
+                self::$config = $config;
+            }
         }
     }
 
@@ -111,20 +119,25 @@ class ProfileManager {
         return $profiles;
     }
 
+    protected static function getConfig(string $key, $default = null) {
+        if (self::$config === null) {
+            return $default;
+        }
+
+        if (property_exists(self::$config, $key)) {
+            return self::$config->{$key};
+        }
+
+        return $default;
+    }
+
     /**
      * Get the Selenium URL.
      *
      * @return  string
      */
     public static function getSeleniumUrl(): string {
-        global $CFG;
-
-        if (property_exists($CFG, 'behat_selenium_url')) {
-            return $CFG->behat_selenium_url;
-        }
-
-        // Return the default selenium URL.
-        return 'http://localhost:4444/wd/hub';
+        return self::getConfig('seleniumUrl', 'http://localhost:4444/wd/hub');
     }
 
     /**
@@ -133,14 +146,16 @@ class ProfileManager {
      * @return  string
      */
     public static function getChromedriverUrl(): string {
-        global $CFG;
+        return self::getConfig('chromedriverUrl', 'http://localhost:9515');
+    }
 
-        if (property_exists($CFG, 'behat_chromedriver_url')) {
-            return $CFG->behat_chromedriver_url;
-        }
-
-        // Return the default URL.
-        return 'http://localhost:9515';
+    /**
+     * Get the path to the Chrome Binary.
+     *
+     * @return  null|string
+     */
+    public static function getChromeBinaryPath(): ?string {
+        return self::getConfig('chromeBinaryPath');
     }
 
     /**
@@ -149,14 +164,16 @@ class ProfileManager {
      * @return  string
      */
     public static function getGeckodriverUrl(): string {
-        global $CFG;
+        return self::getConfig('geckodriverUrl', 'http://localhost:4444');
+    }
 
-        if (property_exists($CFG, 'behat_geckodriver_url')) {
-            return $CFG->behat_geckodriver_url;
-        }
-
-        // Return the default URL.
-        return 'http://localhost:4444';
+    /**
+     * Get the path to the Firefox Binary.
+     *
+     * @return  null|string
+     */
+    public static function getFirefoxBinaryPath(): ?string {
+        return self::getConfig('firefoxBinaryPath');
     }
 
     /**
@@ -165,14 +182,7 @@ class ProfileManager {
      * @return  string
      */
     public static function getEdgedriverUrl(): string {
-        global $CFG;
-
-        if (property_exists($CFG, 'behat_edgedriver_url')) {
-            return $CFG->behat_edgedriver_url;
-        }
-
-        // Return the default URL.
-        return 'http://localhost:9515';
+        return self::getConfig('edgedriverUrl', 'http://localhost:9515');
     }
 
     /**
@@ -183,13 +193,7 @@ class ProfileManager {
      * @return  null|string
      */
     public static function getEdgeBinaryPath(): ?string {
-        global $CFG;
-
-        if (property_exists($CFG, 'behat_edge_binary')) {
-            return $CFG->behat_edge_binary;
-        }
-
-        return null;
+        return self::getConfig('edgeBinaryPath');
     }
 
     /**
@@ -198,14 +202,7 @@ class ProfileManager {
      * @return  string
      */
     public static function getSafaridriverUrl(): string {
-        global $CFG;
-
-        if (property_exists($CFG, 'behat_safaridriver_url')) {
-            return $CFG->behat_safaridriver_url;
-        }
-
-        // Return the default URL.
-        return 'http://localhost:4444';
+        return self::getConfig('safaridriverUrl', 'http://localhost:4444');
     }
 
     /**
@@ -216,11 +213,18 @@ class ProfileManager {
     public static function getBrowserStackUrl(): ?string {
         global $CFG;
 
-        if (property_exists($CFG, 'behat_browserstack_url')) {
-            return $CFG->behat_browserstack_url;
+        if ($browserstackUrl = self::getConfig('browserstackUrl')) {
+            return $browserstackUrl;
         }
 
-        return null;
+        $username = self::getConfig('browserstackUsername');
+        $password = self::getConfig('browserstackPassword');
+
+        if (empty($username) || empty($password)) {
+            return null;
+        }
+
+        return "https://{$username}:{$password}@hub-cloud.browserstack.com/wd/hub";
     }
 
     /**
@@ -282,12 +286,12 @@ class ProfileManager {
     public function getStandardFirefoxProfiles(bool $w3c): array {
         return [
             // Mozilla Firefox using Geckodriver.
-            'gecko' => self::getBrowserProfile(
+            'geckodriver' => self::getBrowserProfile(
                 'firefox',
                 self::getGeckodriverUrl(),
                 $w3c
             ),
-            'headlessgecko' => self::getBrowserProfile(
+            'headlessgeckodriver' => self::getBrowserProfile(
                 'firefox',
                 self::getGeckodriverUrl(),
                 $w3c,
@@ -462,46 +466,13 @@ class ProfileManager {
         global $CFG;
 
         if ($browserName === 'chrome') {
-            $capabilities = array_merge_recursive(
-                [
-                    'args' => [
-                        'no-sandbox',
-                    ],
-                ],
-                $capabilities
-            );
+            $capabilities = self::processChromeBrowserProfile($browserName, $wdhost, $w3c, $capabilities);
         }
         else if ($browserName === 'firefox') {
-            $capabilities = array_merge_recursive(
-                [
-                    'moz:firefoxOptions' => [
-                        'prefs' => [
-                            'devtools.console.stdout.content' => true,
-                        ],
-                        'log' => [
-                            'level' => 'trace',
-                        ],
-                    ],
-                ],
-                $capabilities
-            );
+            $capabilities = self::processFirefoxBrowserProfile($browserName, $wdhost, $w3c, $capabilities);
         }
         else if ($browserName === 'edge') {
-            $defaultcapabilities = [
-                [
-                    'ms:edgeOptions' => [],
-                    'ms:edgeChromium' => true,
-                ],
-            ];
-
-            if ($binaryPath = self::getEdgeBinaryPath()) {
-                $defaultcapabilities['ms:edgeOptions']['binary'] = $binaryPath;
-            }
-
-            $capabilities = array_merge_recursive(
-                $defaultcapabilities,
-                $capabilities
-            );
+            $capabilities = self::processEdgeBrowserProfile($browserName, $wdhost, $w3c, $capabilities);
         }
 
         $profile = [];
@@ -512,139 +483,363 @@ class ProfileManager {
 
         $profile['wd_host'] = $wdhost;
 
-        if (array_key_exists('chromeOptions', $capabilities)) {
-            // Taken from https://chromedriver.chromium.org/capabilities.
-            $types = [
-                'binary' => 'scalar',
-                'debuggerAddress' => 'scalar',
-                'detach' => 'scalar',
-                'minidumpPath' => 'scalar',
+        [
+            'capabilities' => $capabilities,
+            'profile' => $profile,
+        ] = self::processChromeOptions($profile, $capabilities, $w3c);
+        [
+            'capabilities' => $capabilities,
+            'profile' => $profile,
+        ] = self::processFirefoxOptions($profile, $capabilities, $w3c);
+        [
+            'capabilities' => $capabilities,
+            'profile' => $profile,
+        ] = self::processSafariOptions($profile, $capabilities, $w3c);
+        [
+            'capabilities' => $capabilities,
+            'profile' => $profile,
+        ] = self::processEdgeOptions($profile, $capabilities, $w3c);
+        [
+            'capabilities' => $capabilities,
+            'profile' => $profile,
+        ] = self::processBrowserstackOptions($profile, $capabilities, $w3c);
 
-                'args' => 'list',
-                'extensions' => 'list',
-                'excludeSwitches' => 'list',
-                'windowTypes' => 'list',
-
-                'localState' => 'dict',
-                'prefs' => 'dict',
-                'mobileEmulation' => 'dict',
-                'perfLoggingPrefs' => 'dict',
-            ];
-
-            $browserOptions = [];
-            foreach ($capabilities['chromeOptions'] as $key => $values) {
-                if (!array_key_exists($key, $types)) {
-                    throw new \InvalidArgumentException("Unknown option in chromeOptions: '{$key}'");
-                }
-                if ($types[$key] === 'scalar') {
-                    $browserOptions[$key] = $values;
-                } else if ($types[$key] === 'list') {
-                    if (array_key_exists($key, $browserOptions)) {
-                        $browserOptions[$key] = array_merge($browserOptions[$key], $values);
-                    } else {
-                        $browserOptions[$key] = $values;
-                    }
-                } else if ($types[$key] === 'dict') {
-                    if (array_key_exists($key, $browserOptions)) {
-                        $browserOptions[$key] = array_replace($browserOptions[$key], $values);
-                    } else {
-                        $browserOptions[$key] = $values;
-                    }
-                }
-            }
-
-            $profile['capabilities']['extra_capabilities']['chromeOptions'] = $browserOptions;
-        } else
-        if (array_key_exists('moz:firefoxOptions', $capabilities)) {
-            // Taken from https://developer.mozilla.org/en-US/docs/Web/WebDriver/Capabilities/firefoxOptions
-            $types = [
-                'binary' => 'scalar',
-                'profile' => 'scalar',
-
-                'args' => 'list',
-
-                'prefs' => 'dict',
-                'log' => 'dict',
-            ];
-
-            $browserOptions = [];
-            foreach ($capabilities['moz:firefoxOptions'] as $key => $values) {
-                if (!array_key_exists($key, $types)) {
-                    throw new \InvalidArgumentException("Unknown option in firefoxOptions: '{$key}'");
-                }
-                if ($types[$key] === 'scalar') {
-                    $browserOptions[$key] = $values;
-                } else if ($types[$key] === 'list') {
-                    if (array_key_exists($key, $browserOptions)) {
-                        $browserOptions[$key] = array_merge($browserOptions[$key], $values);
-                    } else {
-                        $browserOptions[$key] = $values;
-                    }
-                } else if ($types[$key] === 'dict') {
-                    if (array_key_exists($key, $browserOptions)) {
-                        $browserOptions[$key] = array_replace($browserOptions[$key], $values);
-                    } else {
-                        $browserOptions[$key] = $values;
-                    }
-
-                }
-            }
-
-            if ($w3c) {
-                $profile['capabilities']['extra_capabilities']['moz:firefoxOptions'] = $browserOptions;
-            } else {
-                $profile['capabilities']['extra_capabilities'] = $browserOptions;
-                $profile['capabilities']['extra_capabilities']['marionette'] = false;
-            }
-        } else
-        if (array_key_exists('safari:options', $capabilities)) {
-            $browserOptions = $capabilities['safari:options'];
-            $profile['capabilities']['extra_capabilities']['safari:options'] = $browserOptions;
-
-        } else
-        if (array_key_exists('ms:edgeOptions', $capabilities)) {
-            $types = [
-                'binary' => 'scalar',
-                'args' => 'list',
-            ];
-
-            $browserOptions = [];
-            foreach ($capabilities['ms:edgeOptions'] as $key => $values) {
-                if (!array_key_exists($key, $types)) {
-                    throw new \InvalidArgumentException("Unknown option in firefoxOptions: '{$key}'");
-                }
-                if ($types[$key] === 'scalar') {
-                    $browserOptions[$key] = $values;
-                } else if ($types[$key] === 'list') {
-                    if (array_key_exists($key, $browserOptions)) {
-                        $browserOptions[$key] = array_merge($browserOptions[$key], $values);
-                    } else {
-                        $browserOptions[$key] = $values;
-                    }
-                } else if ($types[$key] === 'dict') {
-                    if (array_key_exists($key, $browserOptions)) {
-                        $browserOptions[$key] = array_replace($browserOptions[$key], $values);
-                    } else {
-                        $browserOptions[$key] = $values;
-                    }
-
-                }
-            }
-
-            $profile['capabilities']['extra_capabilities']['ms:edgeOptions'] = $browserOptions;
-            $profile['capabilities']['extra_capabilities']['ms:edgeChromium'] = true;
-            if (array_key_exists('ms:edgeChromium', $capabilities)) {
-                $profile['capabilities']['extra_capabilities']['ms:edgeChromium'] = $capabilities['ms:edgeChromium'];
-            }
-
-        } else
         if (array_key_exists('capabilities', $capabilities)) {
-            $profile['capabilities']['extra_capabilities'] = $capabilities['capabilities'];
+            $profile['capabilities']['extra_capabilities'] = array_merge_recursive(
+                $profile['capabilities']['extra_capabilities'],
+                $capabilities['capabilities']
+            );
         }
 
+        return $profile;
+    }
+
+    /**
+     * Process the profile for Chrome, filling in defaults as required.
+     *
+     * @param   string $browserName
+     * @param   string $wdhost
+     * @param   bool $w3c
+     * @param   array $capabilities
+     * @return  array
+     */
+    protected static function processChromeBrowserProfile(
+        string $browserName,
+        string $wdhost,
+        bool $w3c = true,
+        array $capabilities = []
+    ): array {
+        $defaultcapabilities = [
+            'args' => [
+                'no-sandbox',
+            ],
+        ];
+
+        if ($binaryPath = self::getChromeBinaryPath()) {
+            $defaultcapabilities['chromeOptions']['binary'] = $binaryPath;
+        }
+
+        return array_merge_recursive(
+            $defaultcapabilities,
+            $capabilities
+        );
+    }
+
+    /**
+     * Process the Options for Chrome, translating known configuration parameters wher epossible.
+     *
+     * @param   array $profile
+     * @param   array $capabilities
+     * @param   bool $w3c
+     * @return  array The modified $capabilities
+     */
+    protected static function processChromeOptions(array $profile, array $capabilities, bool $w3c): array {
+        if (!array_key_exists('chromeOptions', $capabilities)) {
+            return [
+                'capabilities' => $capabilities,
+                'profile' => $profile,
+            ];
+        }
+
+        // Taken from https://chromedriver.chromium.org/capabilities.
+        $types = [
+            'binary' => 'scalar',
+            'debuggerAddress' => 'scalar',
+            'detach' => 'scalar',
+            'minidumpPath' => 'scalar',
+
+            'args' => 'list',
+            'extensions' => 'list',
+            'excludeSwitches' => 'list',
+            'windowTypes' => 'list',
+
+            'localState' => 'dict',
+            'prefs' => 'dict',
+            'mobileEmulation' => 'dict',
+            'perfLoggingPrefs' => 'dict',
+        ];
+
+        $browserOptions = [];
+        foreach ($capabilities['chromeOptions'] as $key => $values) {
+            if (!array_key_exists($key, $types)) {
+                throw new \InvalidArgumentException("Unknown option in chromeOptions: '{$key}'");
+            }
+            if ($types[$key] === 'scalar') {
+                $browserOptions[$key] = $values;
+            } else if ($types[$key] === 'list') {
+                if (array_key_exists($key, $browserOptions)) {
+                    $browserOptions[$key] = array_merge($browserOptions[$key], $values);
+                } else {
+                    $browserOptions[$key] = $values;
+                }
+            } else if ($types[$key] === 'dict') {
+                if (array_key_exists($key, $browserOptions)) {
+                    $browserOptions[$key] = array_replace($browserOptions[$key], $values);
+                } else {
+                    $browserOptions[$key] = $values;
+                }
+            }
+        }
+
+        $profile['capabilities']['extra_capabilities']['chromeOptions'] = $browserOptions;
+
+        unset($capabilities['chromeOptions']);
+        return [
+            'capabilities' => $capabilities,
+            'profile' => $profile,
+        ];
+    }
+
+    /**
+     * Process the profile for Firefox, filling in defaults as required.
+     *
+     * @param   string $browserName
+     * @param   string $wdhost
+     * @param   bool $w3c
+     * @param   array $capabilities
+     * @return  array
+     */
+    protected static function processFirefoxBrowserProfile(
+        string $browserName,
+        string $wdhost,
+        bool $w3c = true,
+        array $capabilities = []
+    ): array {
+        $defaultcapabilities = [
+            'moz:firefoxOptions' => [
+                'prefs' => [
+                    'devtools.console.stdout.content' => true,
+                ],
+                'log' => [
+                    'level' => 'trace',
+                ],
+            ],
+        ];
+
+        if ($binaryPath = self::getFirefoxBinaryPath()) {
+            $defaultcapabilities['moz:firefoxOptions']['binary'] = $binaryPath;
+        }
+
+        return array_merge_recursive(
+            $defaultcapabilities,
+            $capabilities
+        );
+    }
+
+    /**
+     * Process the Options for Chrome, translating known configuration parameters wher epossible.
+     *
+     * @param   array $profile
+     * @param   array $capabilities
+     * @param   bool $w3c
+     * @return  array The modified $capabilities
+     */
+    protected static function processFirefoxOptions(array $profile, array $capabilities, bool $w3c): array {
+        if (!array_key_exists('moz:firefoxOptions', $capabilities)) {
+            return [
+                'capabilities' => $capabilities,
+                'profile' => $profile,
+            ];
+        }
+
+        // Taken from https://developer.mozilla.org/en-US/docs/Web/WebDriver/Capabilities/firefoxOptions
+        $types = [
+            'binary' => 'scalar',
+            'profile' => 'scalar',
+
+            'args' => 'list',
+
+            'prefs' => 'dict',
+            'log' => 'dict',
+        ];
+
+        $browserOptions = [];
+        foreach ($capabilities['moz:firefoxOptions'] as $key => $values) {
+            if (!array_key_exists($key, $types)) {
+                throw new \InvalidArgumentException("Unknown option in firefoxOptions: '{$key}'");
+            }
+            if ($types[$key] === 'scalar') {
+                $browserOptions[$key] = $values;
+            } else if ($types[$key] === 'list') {
+                if (array_key_exists($key, $browserOptions)) {
+                    $browserOptions[$key] = array_merge($browserOptions[$key], $values);
+                } else {
+                    $browserOptions[$key] = $values;
+                }
+            } else if ($types[$key] === 'dict') {
+                if (array_key_exists($key, $browserOptions)) {
+                    $browserOptions[$key] = array_replace($browserOptions[$key], $values);
+                } else {
+                    $browserOptions[$key] = $values;
+                }
+
+            }
+        }
+
+        if ($w3c) {
+            $profile['capabilities']['extra_capabilities']['moz:firefoxOptions'] = $browserOptions;
+        } else {
+            $profile['capabilities']['extra_capabilities'] = $browserOptions;
+            $profile['capabilities']['extra_capabilities']['marionette'] = false;
+        }
+
+        unset($capabilities['moz:firefoxOptions']);
+        return [
+            'capabilities' => $capabilities,
+            'profile' => $profile,
+        ];
+    }
+
+    /**
+     * Process the Options for Safari, translating known configuration parameters wher epossible.
+     *
+     * @param   array $profile
+     * @param   array $capabilities
+     * @param   bool $w3c
+     * @return  array The modified $capabilities
+     */
+    protected static function processSafariOptions(array $profile, array $capabilities, bool $w3c): array {
+        if (!array_key_exists('safari:options', $capabilities)) {
+            return [
+                'capabilities' => $capabilities,
+                'profile' => $profile,
+            ];
+        }
+
+        $browserOptions = $capabilities['safari:options'];
+        $profile['capabilities']['extra_capabilities']['safari:options'] = $browserOptions;
+
+        unset($capabilities['safari:options']);
+        return [
+            'capabilities' => $capabilities,
+            'profile' => $profile,
+        ];
+    }
+
+    /**
+     * Process the profile for Edge, filling in defaults as required.
+     *
+     * @param   string $browserName
+     * @param   string $wdhost
+     * @param   bool $w3c
+     * @param   array $capabilities
+     * @return  array
+     */
+    protected static function processEdgeBrowserProfile(
+        string $browserName,
+        string $wdhost,
+        bool $w3c = true,
+        array $capabilities = []
+    ): array {
+        $defaultcapabilities = [
+            'ms:edgeOptions' => [],
+            'ms:edgeChromium' => true,
+        ];
+
+        if ($binaryPath = self::getEdgeBinaryPath()) {
+            $defaultcapabilities['ms:edgeOptions']['binary'] = $binaryPath;
+        }
+
+        return array_merge_recursive(
+            $defaultcapabilities,
+            $capabilities
+        );
+    }
+
+    /**
+     * Process the Options for Edge, translating known configuration parameters wher epossible.
+     *
+     * @param   array $profile
+     * @param   array $capabilities
+     * @param   bool $w3c
+     * @return  array The modified $capabilities
+     */
+    protected static function processEdgeOptions(array $profile, array $capabilities, bool $w3c): array {
+        if (!array_key_exists('ms:edgeOptions', $capabilities)) {
+            return [
+                'capabilities' => $capabilities,
+                'profile' => $profile,
+            ];
+        }
+        $types = [
+            'binary' => 'scalar',
+            'args' => 'list',
+        ];
+
+        $browserOptions = [];
+        foreach ($capabilities['ms:edgeOptions'] as $key => $values) {
+            if (!array_key_exists($key, $types)) {
+                throw new \InvalidArgumentException("Unknown option in firefoxOptions: '{$key}'");
+            }
+            if ($types[$key] === 'scalar') {
+                $browserOptions[$key] = $values;
+            } else if ($types[$key] === 'list') {
+                if (array_key_exists($key, $browserOptions)) {
+                    $browserOptions[$key] = array_merge($browserOptions[$key], $values);
+                } else {
+                    $browserOptions[$key] = $values;
+                }
+            } else if ($types[$key] === 'dict') {
+                if (array_key_exists($key, $browserOptions)) {
+                    $browserOptions[$key] = array_replace($browserOptions[$key], $values);
+                } else {
+                    $browserOptions[$key] = $values;
+                }
+
+            }
+        }
+
+        $profile['capabilities']['extra_capabilities']['ms:edgeOptions'] = $browserOptions;
+        $profile['capabilities']['extra_capabilities']['ms:edgeChromium'] = true;
+        if (array_key_exists('ms:edgeChromium', $capabilities)) {
+            $profile['capabilities']['extra_capabilities']['ms:edgeChromium'] = $capabilities['ms:edgeChromium'];
+        }
+
+
+        unset($capabilities['ms:edgeOptions']);
+        return [
+            'capabilities' => $capabilities,
+            'profile' => $profile,
+        ];
+    }
+
+    /**
+     * Process the Options for BrowserStack, translating known configuration parameters wher epossible.
+     *
+     * @param   array $profile
+     * @param   array $capabilities
+     * @param   bool $w3c
+     * @return  array The modified $capabilities
+     */
+    protected static function processBrowserstackOptions(array $profile, array $capabilities, bool $w3c): array {
         // Handle browserstack additional options.
         if (array_key_exists('bstack:options', $capabilities)) {
             $profile['capabilities']['extra_capabilities']['bstack:options'] = $capabilities['bstack:options'];
+
+            // Unset binary paths.
+            unset($profile['capabilities']['extra_capabilities']['chromeOptions']['binary']);
+            unset($profile['capabilities']['extra_capabilities']['moz:firefoxOptions']['binary']);
+            unset($profile['capabilities']['extra_capabilities']['ms:edgeOptions']['binary']);
         }
 
         if (!empty($profile['capabilities']['extra_capabilities']['bstack:options'])) {
@@ -653,7 +848,11 @@ class ProfileManager {
             }
         }
 
-        return $profile;
+        unset($capabilities['bstack:options']);
+        return [
+            'capabilities' => $capabilities,
+            'profile' => $profile,
+        ];
     }
 
     /**
