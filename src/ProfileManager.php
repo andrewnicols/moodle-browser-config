@@ -865,7 +865,7 @@ class ProfileManager {
 
         $backtrace = debug_backtrace(2);
         foreach ($backtrace as $params) {
-            if (substr($params['file'], -11) === '/config.php') {
+            if (substr(str_replace('\\', '/', $params['file']), -11) === '/config.php') {
                 $relativedir = dirname($params['file']);
                 break;
             }
@@ -897,7 +897,7 @@ class ProfileManager {
         // Determine if one of the behat CLI scripts is in use.
         $backtrace = debug_backtrace(2);
         foreach ($backtrace as $params) {
-            if (strpos($params['file'], '/admin/tool/behat/cli/') !== false) {
+            if (strpos(str_replace('\\', '/', $params['file']), '/admin/tool/behat/cli/') !== false) {
                 return true;
             }
         }
