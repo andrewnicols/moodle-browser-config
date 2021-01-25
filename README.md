@@ -19,19 +19,25 @@ vendor/bin/behat --profile=headlesschrome --config=/Users/nicols/Sites/moodles/w
 
 ## Configuration
 
-Sensible defaults are provided for all drivers. These can be configured, either in the Moodle `config.php` for a
-specific installation of Moodle, or in the `config.php` file located alongside the `init.php` file for this helper.
+Sensible defaults are provided for all drivers. These can be configured in the `config.php` file in the project root
+folder. See the included `config-dist.php` for an example configuration.
 
-The following default URLs are used for the various WebDriver variants:
+The following configuration values can be configured:
 
-Driver       | Default URL                    | Configuration variable
----          | ---                            | ---
-Selenium     | `http://localhost:4444/wd/hub` | `$CFG->behat_selenium_url`
-Chrome       | `http://localhost:9515`        | `$CFG->behat_chromedriver_url`
-Firefox      | `http://localhost:4444`        | `$CFG->behat_geckodriver_url`
-Safari       | `http://localhost:4444`        | `$CFG->behat_safaridriver_url`
-Edge         | `http://localhost:9515`        | `$CFG->behat_edgedriver_url`
-BrowserStack | [Not set]                      | `$CFG->behat_browserstack_url`
+Driver                | Configuration variable | Description                                                                                      | Default
+---                   | ---                    | ---                                                                                              | ---
+Selenium              | `seleniumUrl`          | The webdriver URL configured for Selenium                                                        | `http://localhost:4444/wd/hub`
+chromedriver          | `chromedriverUrl`      | The webdriver URL configured for chromedriver                                                    | `http://localhost:9515`
+Selenium/chromedriver | `chromeBinaryPath`     | The path to the Chrome or Chromium binary. Passed to selenium/chromedriver                       | [Not set]
+geckodriver           | `geckodriverUrl`       | The webdriver URL configured for geckodriver                                                     | `http://localhost:4444`
+Selenium/geckodriver  | `firefoxBinaryPath`    | The path to the Firefox binary. Passed to selenium/firefoxdriver                                 | [Not set]
+edgedriverUrl         | `edgedriverUrl`        | The webdriver URL configured for Edge                                                            | `http://localhost:9515`
+Selenium/edgedriver   | `edgeBinaryPath`       | The path to the Edge binary. Passed to selenium/edgedriver                                       | [Not set]
+safaridriverUrl       | `safaridriverUrl`      | The webdriver URL configured for Safari                                                          | `http://localhost:4444`
+BrowserStack          | `browserstackUrl`      | The webdriver URL configured for Browserstack. The username and password variables are preferred | [Automatically calculated from `browserstackUsername` and `browserstackPassword`]
+Browserstack          | `browserstackUsername  | A username used to automatically configure the browserstackUrl                                   | [Not set]
+Browserstack          | `browserstackPassword  | A password used to automatically configure the browserstackUrl                                   | [Not set]
+
 
 An example configuration is available in `config-dist.php`.
 
