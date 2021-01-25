@@ -72,6 +72,7 @@ Profile name         | Browser | Driver       | Reliability | Notes
 ---                  | ---     | ---          | ---         | ---
 `edgedriver          | MS Edge | edgedriver   | Good        | Fairly reliable but additional configuration may be required
 `headlessedgedriver` | MS Edge | edgedriver   | Good        | Similar to `edgedriver` but headless
+`headlessedge`       | MS Edge | Selenium     | Very poor   | Does not seem to work with Selenium 3.141.59
 `edge`               | MS Edge | Selenium     | Very poor   | Does not seem to work with Selenium 3.141.59
 `safaridriver`       | Safari  | safaridriver | Very poor   | Click is not supported rendering this driver useless
 

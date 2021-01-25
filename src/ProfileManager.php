@@ -359,6 +359,19 @@ class ProfileManager {
                 self::getSeleniumUrl(),
                 $w3c
             ),
+            'headlessedge' => self::getBrowserProfile(
+                'edge',
+                self::getSeleniumUrl(),
+                $w3c,
+                [
+                    'ms:edgeOptions' => [
+                        'args' => [
+                            'headless',
+                            'no-gpu',
+                        ],
+                    ],
+                ]
+            ),
         ];
     }
 
