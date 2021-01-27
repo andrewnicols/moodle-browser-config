@@ -432,7 +432,6 @@ class ProfileManager {
                         'local' => true,
                     ],
                     'capabilities' => [
-                        'browserName' => 'Edge',
                         'browserVersion' => '87.0',
                     ],
                 ]
@@ -822,6 +821,7 @@ class ProfileManager {
             }
         }
 
+        $profile['capabilities']['extra_capabilities']['browserName'] = 'MicrosoftEdge';
         $profile['capabilities']['extra_capabilities']['ms:edgeOptions'] = $browserOptions;
         $profile['capabilities']['extra_capabilities']['ms:edgeChromium'] = true;
         if (array_key_exists('ms:edgeChromium', $capabilities)) {

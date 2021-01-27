@@ -55,6 +55,10 @@ Profile name           | Browser | Driver       | Notes
 `headlesschromedriver` | Chrome  | chromedriver | Similar to `chromedriver`, but headless
 `gecko`                | Firefox | geckodriver  |
 `headlessgecko`        | Firefox | geckodriver  | Similar to `gecko`, but headless
+`edge`                 | MS Edge | Selenium     | Require Selenium 4.0 or later. May require configuration for `edgeBinaryPath`
+`headlessedge`         | MS Edge | Selenium     | Similar to `edge`, but headless
+`edgedriver            | MS Edge | edgedriver   | Fairly reliable but additional configuration may be required
+`headlessedgedriver`   | MS Edge | edgedriver   | Similar to `edgedriver` but headless
 
 ### Browserstack Profiles
 
@@ -70,10 +74,6 @@ The following profiles are also included but should be considered experimental. 
 
 Profile name         | Browser | Driver       | Reliability | Notes
 ---                  | ---     | ---          | ---         | ---
-`edgedriver          | MS Edge | edgedriver   | Good        | Fairly reliable but additional configuration may be required
-`headlessedgedriver` | MS Edge | edgedriver   | Good        | Similar to `edgedriver` but headless
-`headlessedge`       | MS Edge | Selenium     | Very poor   | Does not seem to work with Selenium 3.141.59
-`edge`               | MS Edge | Selenium     | Very poor   | Does not seem to work with Selenium 3.141.59
 `safaridriver`       | Safari  | safaridriver | Very poor   | Click is not supported rendering this driver useless
 
 
