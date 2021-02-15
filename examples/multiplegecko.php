@@ -11,3 +11,5 @@ for ($i = 1; $i <= 3; $i++) {
     $profile['wd_host'] = str_replace('4444', 4444 + $i - 1, $profile['wd_host']);
     $profiles["headlessgeckodriver{$i}"] = $profile;
 }
+
+return $profiles;
