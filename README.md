@@ -53,8 +53,8 @@ Profile name           | Browser | Driver       | Notes
 `headlessfirefox`      | Firefox | Selenium     | Similar to `firefox`, but headless
 `chromedriver`         | Chrome  | chromedriver |
 `headlesschromedriver` | Chrome  | chromedriver | Similar to `chromedriver`, but headless
-`gecko`                | Firefox | geckodriver  |
-`headlessgecko`        | Firefox | geckodriver  | Similar to `gecko`, but headless
+`geckodriver`          | Firefox | geckodriver  |
+`headlessgeckodriver`  | Firefox | geckodriver  | Similar to `geckodriver`, but headless
 `edge`                 | MS Edge | Selenium     | Require Selenium 4.0 or later. May require configuration for `edgeBinaryPath`
 `headlessedge`         | MS Edge | Selenium     | Similar to `edge`, but headless
 `edgedriver            | MS Edge | edgedriver   | Fairly reliable but additional configuration may be required
