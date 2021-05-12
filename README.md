@@ -7,7 +7,7 @@
 ```
 require_once('/path/to/moodle-browser-config/init.php');
 ```
-1. Initialise behat
+3. Initialise behat
 
 
 ## Usage instructions
@@ -35,8 +35,8 @@ edgedriverUrl         | `edgedriverUrl`        | The webdriver URL configured fo
 Selenium/edgedriver   | `edgeBinaryPath`       | The path to the Edge binary. Passed to selenium/edgedriver                                       | [Not set]
 safaridriverUrl       | `safaridriverUrl`      | The webdriver URL configured for Safari                                                          | `http://localhost:4444`
 BrowserStack          | `browserstackUrl`      | The webdriver URL configured for Browserstack. The username and password variables are preferred | [Automatically calculated from `browserstackUsername` and `browserstackPassword`]
-Browserstack          | `browserstackUsername  | A username used to automatically configure the browserstackUrl                                   | [Not set]
-Browserstack          | `browserstackPassword  | A password used to automatically configure the browserstackUrl                                   | [Not set]
+Browserstack          | `browserstackUsername` | A username used to automatically configure the browserstackUrl                                   | [Not set]
+Browserstack          | `browserstackPassword` | A password used to automatically configure the browserstackUrl                                   | [Not set]
 
 
 An example configuration is available in `config-dist.php`.
@@ -57,7 +57,7 @@ Profile name           | Browser | Driver       | Notes
 `headlessgeckodriver`  | Firefox | geckodriver  | Similar to `geckodriver`, but headless
 `edge`                 | MS Edge | Selenium     | Require Selenium 4.0 or later. May require configuration for `edgeBinaryPath`
 `headlessedge`         | MS Edge | Selenium     | Similar to `edge`, but headless
-`edgedriver            | MS Edge | edgedriver   | Fairly reliable but additional configuration may be required
+`edgedriver`           | MS Edge | edgedriver   | Fairly reliable but additional configuration may be required
 `headlessedgedriver`   | MS Edge | edgedriver   | Similar to `edgedriver` but headless
 
 ### Browserstack Profiles
