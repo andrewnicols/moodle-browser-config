@@ -516,6 +516,9 @@ class ProfileManager {
             'profile' => $profile,
         ] = self::processBrowserstackOptions($profile, $capabilities, $w3c);
 
+        // Work around for https://github.com/Behat/MinkExtension/issues/376.
+        $profile['capabilities']['marionette'] = true;
+
         if (array_key_exists('capabilities', $capabilities)) {
             $profile['capabilities']['extra_capabilities'] = array_merge_recursive(
                 $profile['capabilities']['extra_capabilities'],
