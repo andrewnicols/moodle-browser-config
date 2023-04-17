@@ -248,7 +248,7 @@ class ProfileManager {
                 [
                     'chromeOptions' => [
                         'args' => [
-                            'headless',
+                            'headless=new',
                             'no-gpu',
                         ],
                     ],
@@ -268,7 +268,7 @@ class ProfileManager {
                 [
                     'chromeOptions' => [
                         'args' => [
-                            'headless',
+                            'headless=new',
                             'no-gpu',
                         ],
                     ],
@@ -346,7 +346,7 @@ class ProfileManager {
                 [
                     'ms:edgeOptions' => [
                         'args' => [
-                            'headless',
+                            'headless=new',
                             'no-gpu',
                         ],
                     ],
@@ -366,7 +366,7 @@ class ProfileManager {
                 [
                     'ms:edgeOptions' => [
                         'args' => [
-                            'headless',
+                            'headless=new',
                             'no-gpu',
                         ],
                     ],
