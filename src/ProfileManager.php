@@ -651,12 +651,6 @@ class ProfileManager {
     ): array {
         $defaultcapabilities = [
             'moz:firefoxOptions' => [
-                'prefs' => [
-                    'devtools.console.stdout.content' => true,
-                ],
-                'log' => [
-                    'level' => 'trace',
-                ],
             ],
         ];
 
