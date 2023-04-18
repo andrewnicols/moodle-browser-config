@@ -246,7 +246,7 @@ class ProfileManager {
                 self::getChromedriverUrl(),
                 $w3c,
                 [
-                    'chromeOptions' => [
+                    'goog:chromeOptions' => [
                         'args' => [
                             'headless=new',
                             'no-gpu',
@@ -266,7 +266,7 @@ class ProfileManager {
                 self::getSeleniumUrl(),
                 $w3c,
                 [
-                    'chromeOptions' => [
+                    'goog:chromeOptions' => [
                         'args' => [
                             'headless=new',
                             'no-gpu',
@@ -551,7 +551,16 @@ class ProfileManager {
         ];
 
         if ($binaryPath = self::getChromeBinaryPath()) {
-            $defaultcapabilities['chromeOptions']['binary'] = $binaryPath;
+            $defaultcapabilities['goog:chromeOptions']['binary'] = $binaryPath;
+        }
+
+        if ($w3c) {
+            if (array_key_exists('chromeOptions', $capabilities)) {
+                if (!array_key_exists('googl:chromeOptions', $capabilities)) {
+                    $capabilities['goog:chromeOptions'] = $capabilities['chromeOptions'];
+                    unset($capabilities['chromeOptions']);
+                }
+            }
         }
 
         return array_merge_recursive(
@@ -569,7 +578,7 @@ class ProfileManager {
      * @return  array The modified $capabilities
      */
     protected static function processChromeOptions(array $profile, array $capabilities, bool $w3c): array {
-        if (!array_key_exists('chromeOptions', $capabilities)) {
+        if (!array_key_exists('goog:chromeOptions', $capabilities)) {
             return [
                 'capabilities' => $capabilities,
                 'profile' => $profile,
@@ -595,7 +604,7 @@ class ProfileManager {
         ];
 
         $browserOptions = [];
-        foreach ($capabilities['chromeOptions'] as $key => $values) {
+        foreach ($capabilities['goog:chromeOptions'] as $key => $values) {
             if (!array_key_exists($key, $types)) {
                 throw new \InvalidArgumentException("Unknown option in chromeOptions: '{$key}'");
             }
@@ -616,9 +625,9 @@ class ProfileManager {
             }
         }
 
-        $profile['capabilities']['extra_capabilities']['chromeOptions'] = $browserOptions;
+        $profile['capabilities']['extra_capabilities']['goog:chromeOptions'] = $browserOptions;
 
-        unset($capabilities['chromeOptions']);
+        unset($capabilities['goog:chromeOptions']);
         return [
             'capabilities' => $capabilities,
             'profile' => $profile,
